@@ -5,70 +5,61 @@ const validate = new JustValidate(formEl, {
     errorFieldCssClass: ['is-invalid']
 });
 
+const rules = {
+    required: (errorMessage) => ({
+        rule: 'required',
+        errorMessage,
+    }),
+    maxLength: (value = 255) => ({
+        rule: 'maxLength',
+        value,
+    }),
+    name: (errorMessage = 'Contains an invalid character') => ({
+        rule: 'customRegexp',
+        value: /\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+$/gi,
+        errorMessage,
+    }),
+    email: (errorMessage = 'Invalid email') => ({
+        rule: 'email',
+        errorMessage,
+    }),
+    phone: (errorMessage = 'Invalid phone number') => ({
+        rule: 'customRegexp',
+        value: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im,
+        errorMessage,
+    }),
+};
+
 validate
     .addField(
         '#id_first_name',
-        [{
-                rule: 'required',
-                errorMessage: 'First name is required',
-            },
-
-            {
-                rule: 'maxLength',
-                value: 255,
-            },
-            {
-                rule: 'customRegexp',
-                value: /\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+$/gi,
-                errorMessage: 'Contains an invalid character',
-            },
-
+        [
+            rules.required('First name is required'),
+            rules.maxLength(),
+            rules.name(),
         ],
-
         {
             errorsContainer: '.invalid-fname',
         }
     )
     .addField(
         '#id_last_name',
-        [{
-                rule: 'required',
-                errorMessage: 'Last name is required',
-            },
-
-            {
-                rule: 'maxLength',
-                value: 255,
-            },
-            {
-                rule: 'customRegexp',
-                value: /\b([A-ZÀ-ÿ][-,a-z. ']+[ ]*)+$/gi,
-                errorMessage: 'Contains an invalid character',
-
-            },
+        [
+            rules.required('Last name is required'),
+            rules.maxLength(),
+            rules.name(),
         ],
-
         {
             errorsContainer: '.invalid-lname',
         }
     )
-
     .addField(
         '#id_email',
-        [{
-                rule: 'required',
-                errorMessage: 'Email is required',
-            },
-            {
-                rule: 'email',
-                errorMessage: 'Email is invalid!',
-            },
-            {
-                rule: 'maxLength',
-                value: 255,
-            },
+        [
+            rules.required('Email is required'),
+            rules.email(),
+            rules.maxLength(),
         ],
-
         {
             errorsContainer: '.invalid-email',
 
@@ -76,84 +67,62 @@ validate
     )
     .addField(
         '#id_phone_number', 
-        [{
-                rule: 'required',
-                errorMessage: 'Valid US phone number required',
-            },
-
-            {
-                rule: 'customRegexp',
-                value: /^[\+]?[(]?[0-9]{3}[)]?[-\s\.]?[0-9]{3}[-\s\.]?[0-9]{4,6}$/im,
-                errorMessage: 'Invalid Number',
-
-            },
-            {
-                rule: 'maxLength',
-                value: 15,
-            },
+        [
+            rules.required('Valid US phone number required'),
+            rules.phone(),
+            rules.maxLength(15),
         ],
         {
-
             errorsContainer: '.invalid-ph',
-
         }
     )
-    .addField('#id_shipping_address_line1', [{
-            rule: 'required',
-            errorMessage: 'Shipping address is required',
-        },
+    .addField(
+        '#id_shipping_address_line1',
+        [
+            rules.required('Shipping address is required'),
+            rules.maxLength(),
+        ],
         {
-            rule: 'maxLength',
-            value: 255,
-        },
-    ], {
-
-        errorsContainer: '.invalid-shipping_address_line1',
-
-    })
-    .addField('#id_shipping_address_line4', [{
-            rule: 'required',
-            errorMessage: 'Shipping city is required',
-        },
+            errorsContainer: '.invalid-shipping_address_line1',
+        }
+    )
+    .addField(
+        '#id_shipping_address_line4',
+        [
+            rules.required('Shipping city is required'),
+            rules.maxLength(),
+        ],
         {
-            rule: 'maxLength',
-            value: 255,
-        },
-
-    ], {
-
-        errorsContainer: '.invalid-shipping_address_line4',
-
-    })
-    .addField('#id_shipping_state', [{
-        rule: 'required',
-        errorMessage: 'Shipping state/province is required',
-    }, ], {
-
-        errorsContainer: '.invalid-shipping_state',
-
-    })
-    .addField('#id_shipping_postcode', [{
-            rule: 'required',
-            errorMessage: 'Shipping ZIP/Postcode is required',
-        },
+            errorsContainer: '.invalid-shipping_address_line4',
+        }
+    )
+    .addField(
+        '#id_shipping_state',
+        [
+            rules.required('Shipping state/province is required'),
+        ],
         {
-            rule: 'maxLength',
-            value: 64,
-        },
-    ], {
-
-        errorsContainer: '.invalid-shipping_postcode',
-
-    })
-    .addField('#id_shipping_country', [{
-        rule: 'required',
-        errorMessage: 'Shipping country is required',
-    }, ], {
-
-        errorsContainer: '.invalid-shipping_country',
-
-    })
+            errorsContainer: '.invalid-shipping_state',
+        }
+    )
+    .addField(
+        '#id_shipping_postcode',
+        [
+            rules.required('Shipping ZIP/postcode is required'),
+            rules.maxLength(64),
+        ],
+        {
+            errorsContainer: '.invalid-shipping_postcode',
+        }
+    )
+    .addField(
+        '#id_shipping_country',
+        [
+            rules.required('Shipping country is required'),
+        ], {
+            errorsContainer: '.invalid-shipping_country',
+        }
+    )
 
 
     .onFail((fields) => {
@@ -165,6 +134,99 @@ validate
         Spreedly.validate();
     });
 
+
+function addBillingInfoValidation() {
+    validate
+        .addField(
+            '#id_billing_first_name',
+            [
+                rules.required('First name is required'),
+                rules.maxLength(),
+                rules.name(),
+            ],
+            {
+                errorsContainer: '.invalid-billing_fname',
+            }
+        )
+        .addField(
+            '#id_billing_last_name',
+            [
+                rules.required('Last name is required'),
+                rules.maxLength(),
+                rules.name(),
+            ],
+            {
+                errorsContainer: '.invalid-billing_lname',
+            }
+        )
+        .addField(
+            '#id_billing_address_line1',
+            [
+                rules.required('Billing address is required'),
+                rules.maxLength(),
+            ],
+            {
+                errorsContainer: '.invalid-billing_address_line1',
+            }
+        )
+        .addField(
+            '#id_billing_address_line4',
+            [
+                rules.required('Billing city is required'),
+                rules.maxLength(),
+            ],
+            {
+                errorsContainer: '.invalid-billing_address_line4',
+            }
+        )
+        .addField(
+            '#id_billing_state',
+            [
+                rules.required('Billing state/province is required'),
+            ],
+            {
+                errorsContainer: '.invalid-billing_state',
+            }
+        )
+        .addField(
+            '#id_billing_postcode',
+            [
+                rules.required('Billing ZIP/postcode is required'),
+                rules.maxLength(64),
+            ],
+            {
+                errorsContainer: '.invalid-billing_postcode',
+            }
+        )
+        .addField(
+            '#id_billing_country',
+            [
+                rules.required('Billing country is required'),
+            ], {
+                errorsContainer: '.invalid-billing_country',
+            }
+        );
+}
+
+function removeBillingInfoValidation() {
+    validate.removeField('#id_billing_first_name');
+    validate.removeField('#id_billing_last_name');
+    validate.removeField('#id_billing_address_line1');
+    validate.removeField('#id_billing_address_line4');
+    validate.removeField('#id_billing_state');
+    validate.removeField('#id_billing_postcode');
+    validate.removeField('#id_billing_country');
+}
+
+formBillCheckbox.addEventListener('change', function() {
+    if (formBillCheckbox.checked) {
+        formBill.style.display = 'none';
+        removeBillingInfoValidation();
+    } else {
+        formBill.style.display = 'block';
+        addBillingInfoValidation();
+    }
+});
 
 /**
  * Card Validation with Spreedly iFrame
@@ -190,8 +252,8 @@ function submitPaymentForm() {
     cardErrBlock.innerHTML = '';
     // Get required, non-sensitive, values from host page
     var requiredFields = {};
-    requiredFields["first_name"] = firstName.value;
-    requiredFields["last_name"] = lastName.value;
+    requiredFields["first_name"] = formBillCheckbox.checked ? firstName.value : billingFirstName.value;
+    requiredFields["last_name"] = formBillCheckbox.checked ? lastName.value : billingLastName.value;
     requiredFields["month"] = expMonth.value;
     requiredFields["year"] = expYear.value;
 

@@ -5,9 +5,11 @@ let lineArr = [];
 
 // form
 const formEl = document.querySelector('.form');
-const firstName = document.querySelector("#id_first_name");
-const lastName = document.querySelector("#id_last_name");
-const email = document.querySelector("#id_email");
+const firstName = document.getElementById("id_first_name");
+const lastName = document.getElementById("id_last_name");
+const billingFirstName = document.getElementById("id_billing_first_name");
+const billingLastName = document.getElementById("id_billing_last_name");
+const email = document.getElementById("id_email");
 const expMonth = document.getElementById("id_expiry_month");
 const expYear = document.getElementById("id_expiry_year");
 const cvvParent = document.getElementById("bankcard-cvv");
@@ -16,9 +18,10 @@ const cardErrBlock = document.getElementById("payment-error-block")
 
 const ccCheckbox = document.getElementById('id_use_new_card');
 const addCheckbox = document.getElementById('id_same_as_shipping');
+const formBillCheckbox = document.getElementById('id_billing_same_as_shipping_address');
 const formCC = document.getElementById('form-cc');
 const formShip = document.getElementById('form-shipping');
-const formBill = document.getElementById('form-billing');
+const formBill = document.getElementById('form-billing-address');
 const validErrBlock = document.getElementById("validation-error-block")
 
 // pay method buttons
@@ -131,7 +134,7 @@ const createOrder = async () => {
         "use_default_shipping_address": false,
 
         "use_default_billing_address": false,
-        "billing_same_as_shipping_address": data.billing_same_as_shipping_address,
+        "billing_same_as_shipping_address": !!data.billing_same_as_shipping_address,
         "payment_detail": {
             "payment_method": data.payment_method,
             "card_token": data.card_token,
@@ -150,6 +153,17 @@ const createOrder = async () => {
         "success_url": campaign.nextStep(nextURL)
     }
 
+    if (!data.billing_same_as_shipping_address) {
+        orderData.billing_address = {
+            "first_name": data.billing_first_name,
+            "last_name": data.billing_last_name,
+            "line1": data.billing_address_line1,
+            "line4": data.billing_address_line4,
+            "state": data.billing_state,
+            "postcode": data.billing_postcode,
+            "country": data.billing_country,
+        };
+    }
 
     console.log(orderData);
 
