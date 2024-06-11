@@ -8,7 +8,7 @@ const ordersURL = 'https://campaigns.apps.29next.com/api/v1/orders/'
 
 const headers = {
     'Content-Type': 'application/json',
-    'Authorization': publicKey
+    'Authorization': "tTsj5gmpDlKCfqRRs3fHra1bezjFOaSGq5zPBv5E",
 }
 
 const confirmationURL = "/thank-you.html";
@@ -53,8 +53,3 @@ let campaign = (function() {
 
 
 })();
-
-
-
-
-
