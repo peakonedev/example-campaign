@@ -107,6 +107,29 @@
 										</div>
 									</div>
 									<div class="clearall"></div>
+									<div
+										class="row justify-content-center align-items-center my-4"
+									>
+										<div class="col-sm-4">
+											<div class="input-group">
+												<span class="align-self-center fs-7">Quantity:</span>
+												&nbsp;&nbsp;&nbsp;
+												<input
+													type="number"
+													class="form-control quantity-input"
+													value="1"
+													min="1"
+													max="5"
+												/>
+											</div>
+										</div>
+										<div class="col-sm-3">
+											<div class="fs-7">
+												<span>Total:</span>
+												<span class="totalPrice">$10.00</span>
+											</div>
+										</div>
+									</div>
 									<div class="row justify-content-center">
 										<div class="col-11 col-sm-9">
 											<div class="mb-3 d-grid">
@@ -170,12 +193,30 @@
 		const publicKey = "tTsj5gmpDlKCfqRRs3fHra1bezjFOaSGq5zPBv5E";
 		const nextURL = "/thank-you.html";
 		const refId = sessionStorage.getItem("ref_id");
-		const upsellLineItem = [
+		const upsellItem = [
 			{
 				package_id: 5,
 				quantity: 1,
 			},
 		];
+
+		const upsellLineItem = [upsellItem];
+		const upsellItemPrice = 10;
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const quantityInput = document.querySelector(".quantity-input");
+			const totalPrice = document.querySelector(".totalPrice");
+
+			quantityInput.addEventListener("input", function () {
+				let quantity = Math.min(
+					Math.max(parseInt(quantityInput.value, 10) || 1, 1),
+					5
+				);
+				quantityInput.value = quantity;
+				upsellItem.quantity = quantity;
+				totalPrice.textContent = `$${(10 * quantity).toFixed(2)}`;
+			});
+		});
 	</script>
 	<script type="text/javascript" src="js/campaign.js"></script>
 	<script type="text/javascript" src="js/upsell.js"></script>
