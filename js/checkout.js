@@ -117,6 +117,11 @@ const createOrder = async () => {
 	btnCC.textContent = btnCC.dataset.loadingText;
 	validErrBlock.innerHTML = ``;
 
+	// Check if the extended warranty checkbox is checked
+	const extendedWarrantyChecked = document.getElementById(
+		"id_extended_warranty"
+	).checked;
+
 	const orderData = {
 		user: {
 			first_name: data.first_name,
@@ -145,6 +150,9 @@ const createOrder = async () => {
 		},
 		shipping_method: data.shipping_method,
 		success_url: campaign.nextStep(nextURL),
+		metadata: {
+			extended_warranty: extendedWarrantyChecked, // Set the extended warranty metadata
+		},
 	};
 
 	// If the checkbox is unchecked, gather the billing address fields from the form data and add them to the orderData object
@@ -395,6 +403,12 @@ const calculateTotal = () => {
 
 	let checkoutTotal = parseFloat(packagePrice) + parseFloat(shippingPrice);
 
+	// Add the extended warranty cost if the checkbox is checked
+	if (extendedWarrantyCheckbox.checked) {
+		const quantity = parseInt(selectedPackage.dataset.quantity);
+		checkoutTotal += 2.0 * quantity;
+	}
+
 	let orderTotal = document.querySelector(".order-summary-total-value");
 
 	orderTotal.textContent = campaign.currency.format(checkoutTotal);
@@ -458,6 +472,13 @@ document.addEventListener("DOMContentLoaded", function (event) {
 				firstLineItem.package_id = pid;
 
 				console.log("Change Line Items:", lineArr);
+
+				const extendedWarrantyCheckbox = document.getElementById(
+					"id_extended_warranty"
+				);
+				extendedWarrantyCheckbox.addEventListener("change", () => {
+					calculateTotal();
+				});
 
 				calculateTotal();
 			});

@@ -47,6 +47,21 @@
 						<div class="step-title">STEP 1: SELECT PACKAGE</div>
 						<hr class="mt-2" />
 						<div class="offers d-flex flex-column"></div>
+						<div class="col-12 form-check">
+							<input
+								type="checkbox"
+								id="id_extended_warranty"
+								name="extended_warranty"
+							/>
+							<label for="id_extended_warranty" class="extended_warranty"
+								>YES, I Want Extended Warranty</label
+							>
+							<p>
+								<b>One Time Offer:</b> By placing your order today, you can have
+								an extended warranty and replacement plan. This means your
+								product is covered for 2 years.
+							</p>
+						</div>
 						<div class="mb-5">
 							<div class="row align-items-center">
 								<div class="col">
@@ -66,6 +81,15 @@
 											</div>
 											<div class="text-secondary">
 												<span class="selected-product-price"></span
+												><span class="fs-8"> /ea</span>
+											</div>
+										</div>
+										<div class="justify-content-between p-3 d-flex fw-bold">
+											<div>
+												<span class="">Extended Warranty</span>
+											</div>
+											<div class="text-secondary">
+												<span class="fs-10">$2.00</span
 												><span class="fs-8"> /ea</span>
 											</div>
 										</div>
@@ -744,7 +768,45 @@
 				},
 			],
 		};
+
 		let selectedOfferId = "2";
+
+		document.addEventListener("DOMContentLoaded", function () {
+			const extendedWarrantyCheckbox = document.getElementById(
+				"id_extended_warranty"
+			);
+			const orderSummaryTotal = document.querySelector(
+				".order-summary-total-value"
+			);
+
+			// Event listener for checkbox change
+			extendedWarrantyCheckbox.addEventListener("change", function () {
+				const selectedPackage = document.querySelector(".offer.selected");
+				if (!selectedPackage) return; // Handle case where no package is selected
+
+				const quantity = parseInt(selectedPackage.dataset.quantity, 10); // Assuming data-quantity is available on selected package
+				const shippingPrice = parseFloat(selectedPackage.dataset.priceShipping); // Assuming data-priceShipping is available on selected package
+				const packagePrice = parseFloat(selectedPackage.dataset.priceTotal); // Assuming data-priceTotal is available on selected package
+
+				let total = shippingPrice + packagePrice;
+
+				if (extendedWarrantyCheckbox.checked) {
+					const extendedWarrantyCost = 2.0 * quantity;
+					total += extendedWarrantyCost;
+				} else {
+					// Remove extended warranty cost if unchecked (optional step)
+					const extendedWarrantyCost = 2.0 * quantity;
+					total -= extendedWarrantyCost;
+				}
+
+				orderSummaryTotal.textContent = campaign.currency.format(total);
+			});
+
+			// Initial update on page load (if checkbox is initially checked)
+			if (extendedWarrantyCheckbox.checked) {
+				extendedWarrantyCheckbox.dispatchEvent(new Event("change")); // Trigger change event to update total initially
+			}
+		});
 	</script>
 	<script src="https://core.spreedly.com/iframe/iframe-v1.min.js"></script>
 	<script src="https://unpkg.com/just-validate@latest/dist/just-validate.production.min.js"></script>

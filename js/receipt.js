@@ -1,50 +1,44 @@
 /**
  * Get Order Details for thankyou / receipt page
-*/
+ */
 const getOrderReceipt = async () => {
-    try {
+	try {
+		const response = await fetch(ordersURL + refId + "/", {
+			method: "GET",
+			headers,
+		});
+		const order = await response.json();
 
-        const response = await fetch((ordersURL + refId + '/'), {
-            method: 'GET',
-            headers
+		if (!response.ok) {
+			console.log("Something went wrong");
+			return;
+		}
+		console.log(order);
+		show(order);
+	} catch (error) {
+		console.log(error);
+	}
+};
 
-        });
-        const order = await response.json()
-
-        if (!response.ok) {
-            console.log('Something went wrong');
-            return;
-        }
-        console.log(order);
-        show(order)
-
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-getOrderReceipt()
+getOrderReceipt();
 
 function show(order) {
+	// current date format for order
+	const date = new Date();
+	const dateOptions = {
+		weekday: "long",
+		year: "numeric",
+		month: "long",
+		day: "numeric",
+	};
+	let currentDate = new Date().toLocaleDateString(date, dateOptions);
 
-    // current date format for order
-    const date = new Date()
-    const dateOptions = {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    };
-    let currentDate = new Date().toLocaleDateString(date, dateOptions);
+	// add order details
+	const containerHeader = document.querySelector(".order-receipt-header");
 
-
-
-    // add order details 
-    const containerHeader = document.querySelector(".order-receipt-header");
-
-    containerHeader.innerHTML = `
+	containerHeader.innerHTML = `
                     <div class="row">
-                        <div class="col-sm  p-3">
+                        <div class="col-sm p-3">
                             <div class="fs-6"><i class="fas fa-shopping-cart me-2"></i>Order Number: <span>${order.number}</span></div>
                         </div>
                         <div class="col-sm p-3 text-sm-end">
@@ -52,55 +46,63 @@ function show(order) {
                         </div>
                     </div>`;
 
-    // add order summary 
-    const containerSummary = document.querySelector(".order-receipt-summary");
+	// add order summary
+	const containerSummary = document.querySelector(".order-receipt-summary");
 
-    containerSummary.innerHTML = `
-                    <div class="row justify-content-end row-subtotal">
-                        <div class="col-md-4 p-2 text-end">
-                            <div class="summary-order-subtotal">Sub Total: <span class="ms-3 summary-order-subtotal-value"></span> </div>
-                        </div>
-                    </div>
-                    <div class="row justify-content-end row-shipping ">
-                        <div class="col-md-4 p-2 text-end">
-                            <div class="summary-order-shipping">Shipping & Handling: <span class="ms-3">${campaign.currency.format(order.shipping_incl_tax)}</span> </div>
-                        </div>
-                    </div>
-                    <div class="row justify-content-end row-discounts">
-                        
-                    </div>
-                    <div class="row justify-content-end  row-total">
-                        <div class="col-md-4 p-2 text-end">
-                            <div class="summary-order-total fw-bold">Total: <span class="ms-3">${campaign.currency.format(order.total_incl_tax)}</span> </div>
-                        </div>
-                    </div>`;
+	// Calculate the extended warranty total
+	let extendedWarrantyTotal = 0;
+	if (order.metadata && order.metadata.extended_warranty) {
+		extendedWarrantyTotal =
+			2.0 * order.lines.reduce((acc, item) => acc + item.quantity, 0);
+	}
 
+	// Update the order summary HTML to include the extended warranty
+	containerSummary.innerHTML = `
+<div class="row justify-content-end row-subtotal">
+    <div class="col-md-4 p-2 text-end">
+        <div class="summary-order-subtotal">Sub Total: <span class="ms-3 summary-order-subtotal-value"></span> </div>
+    </div>
+</div>
+<div class="row justify-content-end row-shipping">
+    <div class="col-md-4 p-2 text-end">
+        <div class="summary-order-shipping">Shipping & Handling: <span class="ms-3">${campaign.currency.format(
+					order.shipping_incl_tax
+				)}</span> </div>
+    </div>
+</div>
+<div class="row justify-content-end row-discounts"></div>
+<div class="row justify-content-end row-total">
+    <div class="col-md-4 p-2 text-end">
+        <div class="summary-order-total fw-bold">Total: <span class="ms-3">${campaign.currency.format(
+					order.total_incl_tax + extendedWarrantyTotal
+				)}</span> </div>
+    </div>
+</div>`;
 
-    const rowDiscounts = document.querySelector(".row-discounts");
+	const rowDiscounts = document.querySelector(".row-discounts");
 
-    if (order.total_discounts != (0.00)) {
-        rowDiscounts.innerHTML = `
+	if (order.total_discounts != 0.0) {
+		rowDiscounts.innerHTML = `
                     <div class="col-md-4 p-2 text-end">
-                            <div class="summary-order-discount text-success">Additional Discounts: <span class="ms-3">- ${campaign.currency.format(order.total_discounts)}</span> </div>
-                        </div>`
-    } else {
-        rowDiscounts.classList.add('d-none')
-    }
+                            <div class="summary-order-discount text-success">Additional Discounts: <span class="ms-3">- ${campaign.currency.format(
+															order.total_discounts
+														)}</span> </div>
+                        </div>`;
+	} else {
+		rowDiscounts.classList.add("d-none");
+	}
 
+	// add shipping and billing address
+	const containerFooter = document.querySelector(".order-receipt-footer");
 
-
-
-    // add shipping and biliing address
-    const containerFooter = document.querySelector(".order-receipt-footer");
-
-    containerFooter.innerHTML = `
+	containerFooter.innerHTML = `
                     <div class="row my-4">
-                        <div class="col-sm  p-3 text-center">
+                        <div class="col-sm p-3 text-center">
                             <div class="fs-6">The charge will appear on your billing statement as <span class="order-reference fw-bold"></span></div>
                         </div>
                     </div>
                     <div class="row">
-                        <div class="col-sm ">
+                        <div class="col-sm">
                             <div class="bg-xlight rounded-3 p-3">  
                                 <div class="fs-6 pb-3 mb-3">Shipping Address</div>
                                 <address>
@@ -111,7 +113,7 @@ function show(order) {
                                 </address>
                             </div>
                         </div>
-                        <div class="col-sm ">
+                        <div class="col-sm">
                             <div class="bg-xlight rounded-3 p-3">  
                                 <div class="fs-6 pb-3 mb-3">Billing Address</div>
                                  <address>
@@ -124,17 +126,17 @@ function show(order) {
                         </div>
                     </div>`;
 
-    // add receipt items
-    const containerItems = document.querySelector(".order-receipt-items");
+	// add receipt items
+	const containerItems = document.querySelector(".order-receipt-items");
 
-    containerItems.innerHTML = ``
+	containerItems.innerHTML = ``;
 
-    for (let item of order.lines) {
-        const orderItem = document.createElement("div");
-        orderItem.classList.add("row");
+	for (let item of order.lines) {
+		const orderItem = document.createElement("div");
+		orderItem.classList.add("row");
 
-        const orderItemRow = `
-            <div class="col-8  p-2">
+		const orderItemRow = `
+            <div class="col-8 p-2">
                 <div class="summary-item text-break">${item.product_title}</div>
             </div>
             
@@ -142,32 +144,41 @@ function show(order) {
                 <div class="summary-item-qty">${item.quantity}</div>
             </div>
             <div class="col-2 p-2 text-end">
-                <div class="summary-item-total currency" data-item-price="${item.price_incl_tax_excl_discounts}">${campaign.currency.format(item.price_incl_tax_excl_discounts)}</div>
+                <div class="summary-item-total currency" data-item-price="${
+									item.price_incl_tax_excl_discounts
+								}">${campaign.currency.format(
+			item.price_incl_tax_excl_discounts
+		)}</div>
             </div>
         `;
-        orderItem.insertAdjacentHTML('beforeend', orderItemRow)
-        containerItems.appendChild(orderItem);
+		orderItem.insertAdjacentHTML("beforeend", orderItemRow);
+		containerItems.appendChild(orderItem);
+	}
 
-    }
+	// calculate order subtotal
+	let packageTotals = [];
 
-    // calculate order subtotal
-    let packageTotals = [];
+	let selectedPackage = document.querySelectorAll(".summary-item-total");
 
-    let selectedPackage = document.querySelectorAll(".summary-item-total");
+	selectedPackage.forEach((package) => {
+		packageTotals.push(parseFloat(package.dataset.itemPrice));
+	});
 
-    selectedPackage.forEach((package) => {
-        packageTotals.push(parseFloat(package.dataset.itemPrice));
-    });
+	let subTotal = packageTotals.reduce(function (a, b) {
+		return a + b;
+	}, 0); // Initialize with 0 to avoid undefined error
 
-    let subTotal = packageTotals.reduce(function(a, b){
-      return a + b;
-    });
+	// Add extended warranty to the subtotal if it exists
+	if (order.metadata && order.metadata.extended_warranty) {
+		const extendedWarrantyTotal =
+			2.0 * order.lines.reduce((acc, item) => acc + item.quantity, 0);
+		subTotal += extendedWarrantyTotal;
+	}
 
-    const orderSubTotal = document.querySelector(".summary-order-subtotal-value");
+	const orderSubTotal = document.querySelector(".summary-order-subtotal-value");
 
-    orderSubTotal.textContent = campaign.currency.format(subTotal);
+	orderSubTotal.textContent = campaign.currency.format(subTotal);
 
-    const orderRefernce = document.querySelector(".order-reference");
-    orderRefernce.textContent = orderRef
-
+	const orderReference = document.querySelector(".order-reference");
+	orderReference.textContent = orderRef;
 }
